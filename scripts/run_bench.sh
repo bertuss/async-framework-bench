@@ -36,8 +36,12 @@ echo "wrk image built."
 # Cleanup
 docker kill ${TARGET_NAME} 2>/dev/null || true
 
+echo "Starting statistics collection"
+${SCRIPTS_DIR}/collect_stats.sh &
+echo "Collecting statistics from docker"
+
 # Loop through all dockerfiles
-# Build, start container, bench, kill container
+# Build, start container, run bench test, kill container
 for image in src/apps/*/*/*.Dockerfile; do
     language=$(echo ${image} | cut -f3 -d"/")
     framework=$(echo ${image} | cut -f4 -d"/")
@@ -54,13 +58,7 @@ for image in src/apps/*/*/*.Dockerfile; do
     echo "----------------"
     echo "Starting container ${tag}"
     docker run --rm -d --net ${NETWORK_NAME} --name ${TARGET_NAME} ${tag} &
-    BENCH_PID=$!
     echo "Running"
-
-    echo "Collecting statistics from docker"
-    ${SCRIPTS_DIR}/collect_stats.sh &
-    STATS_PID=$!
-    echo "Statistics pid: ${STATS_PID}"
 
     echo "Waiting ${WAIT_TIME} seconds for server to start up..."
     sleep ${WAIT_TIME}
