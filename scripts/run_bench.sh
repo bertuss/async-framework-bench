@@ -11,7 +11,7 @@ SCRIPTS_DIR=$(dirname "$(python3 -c "import os; print(os.path.realpath('$0'))")"
 BASE_DIR=$(dirname "${SCRIPTS_DIR}")
 
 # settings
-TARGET_NAME="bench-target"
+DEFAULT_TARGET_NAME="bench-target"
 NETWORK_NAME="bench-network"
 BENCH_NAME="bench-wrk"
 PORT=8000
@@ -34,7 +34,7 @@ docker build -q -t bench-wrk src/bench/
 echo "wrk image built."
 
 # Cleanup
-docker kill ${TARGET_NAME} 2>/dev/null || true
+docker kill ${DEFAULT_TARGET_NAME} 2>/dev/null || true
 
 echo "Starting statistics collection"
 ${SCRIPTS_DIR}/collect_stats.sh &
@@ -57,7 +57,7 @@ for image in src/apps/*/*/*.Dockerfile; do
 
     echo "----------------"
     echo "Starting container ${tag}"
-    docker run --rm -d --net ${NETWORK_NAME} --name ${TARGET_NAME} ${tag} &
+    docker run --rm -d --net ${NETWORK_NAME} --name ${DEFAULT_TARGET_NAME} ${tag} &
     echo "Running"
 
     echo "Waiting ${WAIT_TIME} seconds for server to start up..."
@@ -65,19 +65,18 @@ for image in src/apps/*/*/*.Dockerfile; do
 
     echo "----------------"
     echo "Starting load test"
-    readarray -t LOAD_TEST_RESULT<<<"$(docker run --rm --net ${NETWORK_NAME} --name ${BENCH_NAME} ${BENCH_NAME} -t${THREADS} -c${CONNECTIONS} -d${DURATION} --latency -s${SCRIPT} http://${TARGET_NAME}:${PORT})"
+    readarray -t LOAD_TEST_RESULT <<<"$(docker run --rm --net ${NETWORK_NAME} --name ${BENCH_NAME} ${BENCH_NAME} -t${THREADS} -c${CONNECTIONS} -d${DURATION} --latency -s${SCRIPT} http://${DEFAULT_TARGET_NAME}:${PORT})"
     echo "Load test complete"
 
     echo "----------------"
-    echo "${LOAD_TEST_RESULT[-1]}" >> bar.json
+    echo "${LOAD_TEST_RESULT[-1]}" >>output/bench.jsonl
 
     echo "----------------"
     echo "Stopping container ${tag}"
-    docker kill ${TARGET_NAME}
+    docker kill ${DEFAULT_TARGET_NAME}
     echo "Stopped"
     echo "----------------"
 done
 
-
 # Cleanup
-docker kill ${TARGET_NAME} 2>/dev/null || true
+docker kill ${DEFAULT_TARGET_NAME} 2>/dev/null || true
