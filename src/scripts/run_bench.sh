@@ -60,6 +60,7 @@ for image in src/apps/*/*/*.Dockerfile; do
     docker run --rm -d --net ${NETWORK_NAME} --name ${TARGET_NAME} ${tag} &
     echo "Running"
 
+    echo "----------------"
     echo "Waiting ${WAIT_TIME} seconds for server to start up..."
     sleep ${WAIT_TIME}
 
