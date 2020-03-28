@@ -6,4 +6,4 @@ COPY . .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD gunicorn app:app -c server_config.py
+CMD python app.py

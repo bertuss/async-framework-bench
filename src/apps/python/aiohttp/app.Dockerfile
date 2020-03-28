@@ -1,9 +1,9 @@
-FROM python:3.7.1-slim
+FROM python:3.7.4-slim
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY . .
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 CMD python app.py --host=0.0.0.0 --port=8000 --uvloop

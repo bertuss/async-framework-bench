@@ -1,3 +1,8 @@
 .idea/
 venv/
 .vscode/
+
+output/*
+!output/.gitkeep
+
+node_modules/
